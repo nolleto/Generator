@@ -12,6 +12,5 @@ chrome.runtime.onMessage.addListener(
     e.value = request.value;
     e.blur();
     e.focus();
-    
-  	sendResponse({ success: true });
+    sendResponse({ success: true });
   });
