@@ -19,6 +19,16 @@ var dbHelper = new (function() {
 		},
 		setSaveOnClipboard: function(v) {
 			localStorage.setItem("copy", v);	
+		},
+		getReplaceAll: function() {
+			var v = localStorage.getItem("replace");
+			if (!v) {
+				return false
+			}
+			return v == 'true';
+		},
+		setReplaceAll: function(v) {
+			localStorage.setItem("replace", v);	
 		}
 	};
 });
@@ -28,7 +38,10 @@ function setValue(value) {
 		copyToClipboard(value);
 	}
 	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-		chrome.tabs.sendMessage(tabs[0].id, { value : value }, function(response) {});
+		chrome.tabs.sendMessage(tabs[0].id, { 
+			value : value,
+			replaceAll: dbHelper.getReplaceAll()
+		}, function(response) {});
 	});
 }
 
@@ -42,6 +55,8 @@ function onClickHandler(info, tab) {
 		dbHelper.setUseMask(info.checked);		
 	} else if (info.menuItemId == "clipboard") {
 		dbHelper.setSaveOnClipboard(info.checked);
+	} else if (info.menuItemId == "replace") {
+		dbHelper.setReplaceAll(info.checked);
 	}
 };
 
@@ -50,12 +65,15 @@ chrome.runtime.onInstalled.addListener(function() {
 	var context = "editable",
 		parentId = getRandom(100).toString();	
 
-	chrome.contextMenus.create({"title": "Gerar...", "contexts":[context], "id": parentId});
-	chrome.contextMenus.create({"title": "CPF", "contexts":[context], "id": "cpf", "parentId": parentId});
-	chrome.contextMenus.create({"title": "CNPJ", "contexts":[context], "id": "cnpj", "parentId": parentId});
-	chrome.contextMenus.create({"type":"separator", "parentId": parentId, "id": "separatorId", "contexts":[context]});
-	chrome.contextMenus.create({"title": "Usar Máscara", "type": "checkbox", "contexts":[context], "id": "useMask", "parentId": parentId, "checked": dbHelper.getUseMask()});
-	chrome.contextMenus.create({"title": "Copiar para Área de Transferência", "type": "checkbox", "contexts":[context], "id": "clipboard", "parentId": parentId, "checked": dbHelper.getSaveOnClipboard()});
+	chrome.contextMenus.removeAll(function() {
+		chrome.contextMenus.create({"title": "Gerar...", "contexts":[context], "id": parentId});
+		chrome.contextMenus.create({"title": "CPF", "contexts":[context], "id": "cpf", "parentId": parentId});
+		chrome.contextMenus.create({"title": "CNPJ", "contexts":[context], "id": "cnpj", "parentId": parentId});
+		chrome.contextMenus.create({"type":"separator", "parentId": parentId, "id": "separatorId", "contexts":[context]});
+		chrome.contextMenus.create({"title": "Usar Máscara", "type": "checkbox", "contexts":[context], "id": "useMask", "parentId": parentId, "checked": dbHelper.getUseMask()});
+		chrome.contextMenus.create({"title": "Copiar para Área de Transferência", "type": "checkbox", "contexts":[context], "id": "clipboard", "parentId": parentId, "checked": dbHelper.getSaveOnClipboard()});
+		chrome.contextMenus.create({"title": "Subistituir todo conteúdo ao colar", "type": "checkbox", "contexts":[context], "id": "replace", "parentId": parentId, "checked": dbHelper.getReplaceAll()});
+	});	
 });
 
 function copyToClipboard(value) {

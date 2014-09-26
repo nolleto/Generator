@@ -1,10 +1,11 @@
 {
   "name": "Gerador de CPF e CNPJ",
   "description": "Gera CPF e CNPJ através do clique direto do mouse.",
-  "version": "1.1",
+  "version": "1.2",
   "permissions": [
   	"contextMenus",
-  	"http://*/*"
+  	"http://*/*",
+    "https://*/*"
   	],
   "background": {
   	"persistent": false,
@@ -12,7 +13,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://*/*"],
+      "matches": ["http://*/*","https://*/*"],
       "js": ["main.js"]
     }
   ],
